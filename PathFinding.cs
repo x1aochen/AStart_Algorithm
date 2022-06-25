@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using System.Diagnostics;
 public class PathFinding : MonoBehaviour
 {
     private Grid grid;
@@ -15,40 +15,38 @@ public class PathFinding : MonoBehaviour
 
     private void Update()
     {
-        FindPath(seeker.position, target.position);
+        if (Input.GetButtonDown("Jump"))
+            FindPath(seeker.position, target.position);
     }
 
     private void FindPath(Vector3 startPos,Vector3 targetpos)
     {
+        Stopwatch sw = new Stopwatch();
+        sw.Start();
+
         Node startNode = grid.NodeFromWorldPoint(startPos);
         Node targetNode = grid.NodeFromWorldPoint(targetpos);
 
         //开启列表
-        List<Node> openSet = new List<Node>();
+        Heap<Node> openSet = new Heap<Node>(grid.MaxSize);
         //关闭列表
         HashSet<Node> closeSet = new HashSet<Node>();
         openSet.Add(startNode);
 
         while (openSet.Count > 0)
         {
-            Node currenNode = openSet[0];
             //找到代价最低节点
-            for (int i = 1;i < openSet.Count; i++)
-            {
-                //如果 遍历点的 离终点代价h 大于等于当前节点的h，则直接不考虑
-                if (openSet[i].fCost < currenNode.fCost || openSet[i].fCost == currenNode.fCost 
-                    && openSet[i].hCost < currenNode.hCost)
-                {
-                    currenNode = openSet[i];
-                }
-            }
+
+            Node currenNode = openSet.RemoveFirst();
 
             //从开启列表中移除，加入关闭列表
-            openSet.Remove(currenNode);
             closeSet.Add(currenNode);
 
             if (currenNode == targetNode)
             {
+                sw.Stop();
+                //打印寻找时间
+                print("path found: " + sw.ElapsedMilliseconds + " ms" );
                 RetracePath(startNode, targetNode);
                 return;
             }
@@ -68,9 +66,12 @@ public class PathFinding : MonoBehaviour
                     neighbour.parent = currenNode;
 
                     if (!openSet.Contains(neighbour))
+                    {
                         openSet.Add(neighbour);
+                    }
                 }
             }
+
         }
     }
 
@@ -93,6 +94,12 @@ public class PathFinding : MonoBehaviour
         grid.path = path;
     }
 
+    /// <summary>
+    /// 两点间距离
+    /// </summary>
+    /// <param name="nodeA"></param>
+    /// <param name="nodeB"></param>
+    /// <returns></returns>
     private int GetDistance(Node nodeA,Node nodeB)
     {
         int dstX = Mathf.Abs(nodeA.gridX - nodeB.gridX);
