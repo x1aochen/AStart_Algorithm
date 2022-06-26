@@ -68,7 +68,7 @@ public class Heap<T> where T : IHeapItem<T>
         get => heapSize;
     }
 
-    //删除顶部节点时的向下排序
+    //删除顶部节点时的向下排序，从上往下寻找儿子与自身作比较
     private void SortDown(T item)
     {
         while (true)
@@ -107,7 +107,7 @@ public class Heap<T> where T : IHeapItem<T>
     }
 
 
-    //增加节点时的向上排序
+    //增加节点时的向上排序，从下往上找 父亲与自身作比较
     private void SortUp(T item)
     {
         //父节点索引 = 自己的索引 - 1 除 2
@@ -134,14 +134,14 @@ public class Heap<T> where T : IHeapItem<T>
         items[itemA.HeapIndex] = itemB;
         items[itemB.HeapIndex] = itemA;
 
-        //T对象中存储的索引交换
+        //T对象中存储的其自身在堆中索引的交换
         int tmp = itemA.HeapIndex;
         itemA.HeapIndex = itemB.HeapIndex;
         itemB.HeapIndex = tmp;
     }
 
 }
-
+//要求必须存储T对象在堆中索引并且提供比较方法
 public interface IHeapItem<T> : IComparable<T>
 {
     public int HeapIndex

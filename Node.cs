@@ -23,7 +23,6 @@ public class Node : IHeapItem<Node>
         this.worldPos = worldPos;
         this.gridX = gridX;
         this.gridY = gridY;
-
     }
 
     public int fCost
@@ -47,7 +46,7 @@ public class Node : IHeapItem<Node>
     {
         //前者大于后者返回1，则表示前者代价更高
         int compare = fCost.CompareTo(node.fCost);
-        //如果 代价相等，则根据离终点距离代价判断
+        //代价相等规则：根据离终点距离代价判断
         if (compare == 0)
         {
             compare = hCost.CompareTo(node.hCost);

@@ -4,8 +4,7 @@ using UnityEngine;
 
 public class Grid : MonoBehaviour
 {
-    [Tooltip("是否只显示路径格子")]
-    public bool onlyDisplayPathGizmos; 
+    public bool displayGridGizmos;
     public LayerMask unwalkableMask;
     //地图大小
     public Vector2 gridWorldSize;
@@ -17,14 +16,12 @@ public class Grid : MonoBehaviour
     private float nodeDiameter;
     //地图长宽
     private int gridSizeX, gridSizeY;
-    //路径
-    public List<Node> path;
     /// <summary>
     /// 面积大小
     /// </summary>
     public int MaxSize => gridSizeX * gridSizeY;
-   
-    private void Start()
+
+    private void Awake()
     {
         nodeDiameter = nodeRadius * 2;
         gridSizeX = Mathf.RoundToInt(gridWorldSize.x / nodeDiameter);
@@ -37,15 +34,15 @@ public class Grid : MonoBehaviour
         grid = new Node[gridSizeX, gridSizeY];
         //世界左下角点
         Vector3 worldBottmLeft = transform.position - Vector3.right * gridWorldSize.x / 2 - Vector3.forward * gridWorldSize.y / 2;
-        for (int x = 0;x < gridSizeX; x++)
+        for (int x = 0; x < gridSizeX; x++)
         {
             for (int y = 0; y < gridSizeY; y++)
             {
                 //节点坐标，从世界左下角点开始绘制所有节点，因为是以节点中心位置，所以应该加上半径，为了不让节点越界
                 Vector3 worldPoint = worldBottmLeft + Vector3.right * (x * nodeDiameter + nodeRadius) + Vector3.forward * (y * nodeDiameter + nodeRadius);
                 //根据碰撞检测判断当前位置是否可行走
-                bool walkable = !(Physics.CheckSphere(worldPoint, nodeRadius,unwalkableMask));
-                grid[x, y] = new Node(walkable, worldPoint,x,y);
+                bool walkable = !(Physics.CheckSphere(worldPoint, nodeRadius, unwalkableMask));
+                grid[x, y] = new Node(walkable, worldPoint, x, y);
             }
         }
     }
@@ -58,9 +55,9 @@ public class Grid : MonoBehaviour
     public List<Node> GetNeighbours(Node node)
     {
         List<Node> neighbours = new List<Node>();
-        for (int x = -1;x <= 1; x++)
+        for (int x = -1; x <= 1; x++)
         {
-            for (int y = -1;y <= 1; y++)
+            for (int y = -1; y <= 1; y++)
             {
                 if (x == 0 && y == 0)
                     continue;
@@ -90,47 +87,23 @@ public class Grid : MonoBehaviour
         percentY = Mathf.Clamp01(percentY);
 
         //数组最大索引值 gridSize - 1
-        int x = Mathf.RoundToInt((gridSizeX - 1) * percentX);   
-        int y = Mathf.RoundToInt((gridSizeY - 1) * percentY);   
+        int x = Mathf.RoundToInt((gridSizeX - 1) * percentX);
+        int y = Mathf.RoundToInt((gridSizeY - 1) * percentY);
         return grid[x, y];
     }
-
 
 
     private void OnDrawGizmos()
     {
         Gizmos.DrawWireCube(transform.position, new Vector3(gridWorldSize.x, 1, gridWorldSize.y));
-        if (onlyDisplayPathGizmos)
-        {
-            if (path != null)
-            {
-                foreach (Node node in path)
-                {
-                    Gizmos.color = Color.green;
-                    Gizmos.DrawCube(node.worldPos, Vector3.one * (nodeDiameter - 0.1f));
-                }
-            }
-        }
-        else
-        {
-            if (grid != null)
-            {
-                foreach (Node node in grid)
-                {
-                    Gizmos.color = node.walkable ? Color.white : Color.black;
-                    if (path != null)
-                    {
-                        if (path.Contains(node))
-                        {
-                            Gizmos.color = Color.green;
-                        }
-                    }
 
-                    Gizmos.DrawCube(node.worldPos, Vector3.one * (nodeDiameter - 0.1f));
-                }
+        if (grid != null && displayGridGizmos)
+        {
+            foreach (Node node in grid)
+            {
+                Gizmos.color = node.walkable ? Color.white : Color.black;
+                Gizmos.DrawCube(node.worldPos, Vector3.one * (nodeDiameter - 0.1f));
             }
         }
     }
-
-
 }
